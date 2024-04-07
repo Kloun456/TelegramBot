@@ -9,7 +9,7 @@ namespace CoffeBot.States
     {
         public UserDataChanged? SignedUpdateHandled => null;
 
-        public List<BotUser> Users { get; } = new();
+        public List<BotUser> Users { get; } = [];
 
         public async Task<IBotUser?> GetUserByIdAsync(long telegramId) =>
             await Task.FromResult(Users.Find(x => x.TelegramId == telegramId));

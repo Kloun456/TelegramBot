@@ -1,79 +1,69 @@
-﻿using CoffeBot.States;
-using SKitLs.Bots.Telegram.AdvancedMessages.AdvancedDelivery;
-using SKitLs.Bots.Telegram.AdvancedMessages.Model.Messages;
-using SKitLs.Bots.Telegram.AdvancedMessages.Model.Messages.Text;
-using SKitLs.Bots.Telegram.ArgedInteractions.Argumentation;
-using SKitLs.Bots.Telegram.Core.Model.Building;
-using SKitLs.Bots.Telegram.Core.Model.Interactions.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.Management.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.UpdateHandlers.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.UpdatesCasting.Signed;
-using SKitLs.Bots.Telegram.PageNavs.Model;
-using SKitLs.Bots.Telegram.PageNavs.Prototype;
+﻿using Telegram.Bot.Exceptions;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot;
+using Microsoft.Extensions.DependencyInjection;
+using CoffeBot.Handlers;
+using CoffeBot.Repositories;
+using CoffeBot.Service;
 
+// https://t.me/lattelovecoffee
 
 namespace TelegramBotExperiments
-{ 
+{
     class Program
     {
-        static async Task Main(string[] args)
-        {
+     
+        private static ITelegramBotClient? _botClient;
+        private static ReceiverOptions? _receiverOptions;
 
-            var privateMessages = new DefaultSignedMessageUpdateHandler();
-            var privateTexts = new DefaultSignedMessageTextUpdateHandler
+        private static IServiceCollection ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<UpdateHandler>();
+            services.AddTransient<IRepositoryCup, RepositoryCup>();
+            services.AddTransient<IBotService, BotService>();
+            services.AddTransient<IRepositoryUser, RepositoryUser>();
+            return services;
+        }
+            public static async Task Main()
+        {
+            
+            _botClient = new TelegramBotClient("6435771255:AAHigtm3iMfduaIBEJMRkZqlwzlL5Ndcp8o"); // заменить получение токена из
+            //appsetings.json
+
+            _receiverOptions = new ReceiverOptions()
             {
-                CommandsManager = new DefaultActionManager<SignedMessageTextUpdate>()
+                AllowedUpdates = [UpdateType.Message, UpdateType.CallbackQuery],
+                ThrowPendingUpdates = true
             };
-            privateTexts.CommandsManager.AddSafely(StartCommand);
-            privateMessages.TextMessageUpdateHandler = privateTexts;
 
-            ChatDesigner privates = ChatDesigner.NewDesigner()
-               .UseUsersManager(new UserManager())
-               .UseMessageHandler(privateMessages);
+            using var cancellationToken = new CancellationTokenSource();
+            
+            var services = ConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var updateHandler = serviceProvider.GetService<UpdateHandler>();
 
-            await BotBuilder.NewBuilder("6435771255:AAHigtm3iMfduaIBEJMRkZqlwzlL5Ndcp8o") // токен бота
-               .EnablePrivates(privates)
-               .AddService<IArgsSerializeService>(new DefaultArgsSerializeService())
-               .AddService<IMenuManager>(GetMenuManager())
-               .CustomDelivery(new AdvancedDeliverySystem())
-               .Build()
-               .Listen();
+            _botClient?.StartReceiving(updateHandler.Update, ErrorHandler, _receiverOptions, cancellationToken.Token);
+
+            var botUser = await _botClient.GetMeAsync();
+            Console.WriteLine($"{botUser.FirstName} запущен!");
+
+            await Task.Delay(-1);
+
         }
-
-        private static DefaultCommand StartCommand => new("start", Do_StartAsync);
-        private static async Task Do_StartAsync(SignedMessageTextUpdate update)
+       
+        private static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
         {
-            IMenuManager mm = update.Owner.ResolveService<IMenuManager>();
+            var ErrorMessage = error switch
+            {
+                ApiRequestException apiRequestException
+                    => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => error.ToString()
+            };
 
-            IBotPage page = mm.GetDefined("main");
-
-            await mm.PushPageAsync(page, update);
+            Console.WriteLine(ErrorMessage);
+            return Task.CompletedTask;
         }
-
-        private static IMenuManager GetMenuManager()
-        {
-            DefaultMenuManager menuManager = new ();
-
-            OutputMessageText mainBoody = new ("Что выберешь?/n");
-            PageNavMenu mainMenu = new ();
-            WidgetPage mainPage = new ("main", "Главная", mainBoody, mainMenu);
-
-            DynamicMessage savedBody = new(message => { return new OutputMessageText("Избранное ...");
-            });
-
-            WidgetPage savePage = new("save", "Избранное", savedBody);
-
-            mainMenu.PathTo(savePage);
-            mainMenu.AddAction(StartSearching);
-
-            menuManager.Define(mainPage);
-            menuManager.Define(savePage);
-
-            return menuManager;
-        }
-
-        private static DefaultCallback StartSearching => new("startSearch", "Найти", Do_SearchAsync);
-        private static async Task Do_SearchAsync(SignedCallbackUpdate update) { }
-
     }
 }
