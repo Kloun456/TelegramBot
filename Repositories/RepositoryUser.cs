@@ -1,4 +1,5 @@
 ﻿using CoffeBot.DataBase;
+using CoffeBot.Helpers;
 using CoffeBot.Models;
 using Telegram.Bot.Types;
 
@@ -16,7 +17,7 @@ namespace CoffeBot.Repositories
         {
             var user = (
                 from userDb in _dbContext.Users
-                where userDb.Id == id
+                where userDb.Id == Conversions.LongToGuid(id)
                 select userDb)
                 .ToList()
                 .FirstOrDefault();
@@ -27,7 +28,7 @@ namespace CoffeBot.Repositories
         {
             _dbContext.Users.Add(new UserDb
             {
-                Id = user.Id,
+                Id = Conversions.LongToGuid(user.Id),
                 IsAdmin = false,
                 Name = user.FirstName
             });

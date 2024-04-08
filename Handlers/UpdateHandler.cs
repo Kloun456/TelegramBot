@@ -3,20 +3,34 @@ using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Types;
 using Telegram.Bot;
 using CoffeBot.Service;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Exceptions;
 
 namespace CoffeBot.Handlers
 {
-    public class UpdateHandler
+    public class UpdateHandler : IUpdateHandler
     {
         private static IBotService _botService;
         public UpdateHandler(IBotService botService) 
         {
             _botService = botService;
         }
-        public  async Task Update(ITelegramBotClient botClient,
-          Update update, CancellationToken cancellationToken)
+
+        public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            
+            var ErrorMessage = exception switch
+            {
+                ApiRequestException apiRequestException
+                    => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            Console.WriteLine(ErrorMessage);
+            return Task.CompletedTask;
+        }
+
+        public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
             try
             {
                 switch (update.Type)
@@ -50,7 +64,7 @@ namespace CoffeBot.Handlers
                                             InlineKeyboardButton.WithCallbackData("Проверить количество чашек", "CheckCups")
                                         }
                                     });
-                                
+
                                 var menu = new MenuButtonDefault();
                                 //await botClient.SetChatMenuButtonAsync(chat?.Id, menu, cancellationToken: cancellationToken);
                                 await botClient.SendTextMessageAsync(
@@ -76,35 +90,35 @@ namespace CoffeBot.Handlers
                                 switch (callbackQuery.Data)
                                 {
                                     case "AddCupButton":
-                                    {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                        if (!_botService.UserIsExistsInDb(user))
                                         {
-                                            _botService.CreateUser(user);
-                                        }
-                                        if(_botService.UserIsAdmin(user))
-                                        {
-                                            if(_botService.IsUserHaveCups(user))
+                                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                                            if (!_botService.UserIsExistsInDb(user))
                                             {
-                                                _botService.CreateCupForUser(user);
+                                                _botService.CreateUser(user);
+                                            }
+                                            if (_botService.UserIsAdmin(user))
+                                            {
+                                                if (!_botService.IsUserHaveCups(user))
+                                                {
+                                                    _botService.CreateCupForUser(user);
+                                                }
+                                                else
+                                                {
+                                                    _botService.AddCupForUser(user);
+                                                }
                                             }
                                             else
                                             {
-                                                _botService.AddCupForUser(user);
+                                                await botClient.SendTextMessageAsync(chat.Id, "Вы не являетесь администратором!");
                                             }
+                                            return;
                                         }
-                                        else
-                                        {
-                                            await botClient.SendTextMessageAsync(chat.Id, "Вы не являетесь администратором!");
-                                        }
-                                        return;
-                                    }
                                     case "CheckCups":
-                                    {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                        _botService.CheckCupsForUser(user);
-                                        return;
-                                    }
+                                        {
+                                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                                            _botService.CheckCupsForUser(user);
+                                            return;
+                                        }
                                 }
                                 return;
                             }
@@ -117,5 +131,7 @@ namespace CoffeBot.Handlers
                 Console.WriteLine(ex.Message);
             }
         }
+
+       
     }
 }

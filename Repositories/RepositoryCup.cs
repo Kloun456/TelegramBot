@@ -1,4 +1,5 @@
 ﻿using CoffeBot.DataBase;
+using CoffeBot.Helpers;
 using CoffeBot.Models;
 using Telegram.Bot.Types;
 
@@ -15,7 +16,7 @@ namespace CoffeBot.Repositories
         public Cup? GetCupForUser(User user)
         {
             var cupUser = (from cup in _dbContext.Cups
-                       where cup.UserDb.Id == user.Id
+                       where cup.UserDb.Id == Conversions.LongToGuid(user.Id)
                        select cup).FirstOrDefault();
             return cupUser;
         }
@@ -23,7 +24,7 @@ namespace CoffeBot.Repositories
         public void AddCupForUser(User user)
         {
             var userCup = (from cup in _dbContext.Cups
-                            where cup.UserDb.Id == user.Id
+                            where cup.UserDb.Id == Conversions.LongToGuid(user.Id)
                             select cup).ToList().FirstOrDefault();
             if (userCup == null) 
             {
@@ -35,15 +36,11 @@ namespace CoffeBot.Repositories
 
         public void CreateCupForUser(User user)
         {
+            
             _dbContext.Cups.Add(new Cup 
             { 
                 CountCups = 1, 
-                Id = Guid.NewGuid(), 
-                UserDb = new() 
-                { 
-                    Id = user.Id, 
-                    Name = user.Username 
-                } 
+                Id = Conversions.LongToGuid(user.Id) 
             });
             _dbContext.SaveChanges();
         }
