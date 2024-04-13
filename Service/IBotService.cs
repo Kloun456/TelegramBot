@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Types;
+﻿using CoffeBot.Models;
+using Telegram.Bot.Types;
 
 namespace CoffeBot.Service
 {
@@ -12,7 +13,9 @@ namespace CoffeBot.Service
 
         void CreateUser(User user);
 
-        void CheckCupsForUser(User user);
+        void CheckCupForUser(User user);
+
+        Cup? GetCupForUser(User user);
 
         bool IsUserHaveCups(User user);
 

@@ -5,6 +5,8 @@ using Telegram.Bot;
 using CoffeBot.Service;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Exceptions;
+using QRCoder;
+using static QRCoder.PayloadGenerator;
 
 namespace CoffeBot.Handlers
 {
@@ -53,15 +55,17 @@ namespace CoffeBot.Handlers
                                 throw new ArgumentException("Не получилось получить чат");
                             }
                             Console.WriteLine($"{user.FirstName} ({user.Id}) написал сообщение: {message.Text}");
+                     
                             if (message.Text == "/start")
                             {
+                                
                                 var inlineKeyboard = new InlineKeyboardMarkup(
                                     new List<InlineKeyboardButton[]>()
                                     {
                                         new InlineKeyboardButton[]
                                         {
-                                            InlineKeyboardButton.WithCallbackData("Добавить напиток", "AddCupButton"),
-                                            InlineKeyboardButton.WithCallbackData("Проверить количество чашек", "CheckCups")
+                                            InlineKeyboardButton.WithCallbackData("Добавить напиток", "addCup"),
+                                            InlineKeyboardButton.WithCallbackData("Проверить количество чашек", "checkCups")
                                         }
                                     });
 
@@ -71,6 +75,26 @@ namespace CoffeBot.Handlers
                                     chatId: chat.Id, "Рад приветствовать в боте для лучшей кофейни!",
                                     replyMarkup: inlineKeyboard, cancellationToken: cancellationToken);
                             }
+                            else if (message.Text.Contains("/start") )
+                            {
+                                if (_botService.UserIsAdmin(user))
+                                {
+                                    var clientId = GetUserIdFromMessage(message.Text);
+                                    user.Id = clientId;
+                                    _botService.AddCupForUser(user);
+                                    await botClient.SendTextMessageAsync(
+                                    chatId: chat.Id,
+                                    "Чашка успешно добавлена!");
+                                }
+                                else
+                                {
+                                    await botClient.SendTextMessageAsync(
+                                    chatId: chat.Id,
+                                    "Вы не являетесь администратором!");
+                                }
+                                
+                            }
+
                             return;
                         }
 
@@ -89,34 +113,48 @@ namespace CoffeBot.Handlers
 
                                 switch (callbackQuery.Data)
                                 {
-                                    case "AddCupButton":
+                                    case "addCup":
                                         {
                                             await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                                            
+                                            
                                             if (!_botService.UserIsExistsInDb(user))
                                             {
                                                 _botService.CreateUser(user);
                                             }
-                                            if (_botService.UserIsAdmin(user))
+                                            
+                                            var qrGenerator = new QRCodeGenerator();
+                                            
+                                            Payload payload = new Url($"https://t.me/latteLoveBot?start={user.Id}");
+
+                                            QRCodeData qrCodeData = qrGenerator.CreateQrCode(payload);
+                                            var qrCode = new BitmapByteQRCode(qrCodeData);
+                                            var arCodeAsBitmap = qrCode.GetGraphic(20);
+
+
+                                            using (var ms = new MemoryStream(arCodeAsBitmap))
                                             {
-                                                if (!_botService.IsUserHaveCups(user))
-                                                {
-                                                    _botService.CreateCupForUser(user);
-                                                }
-                                                else
-                                                {
-                                                    _botService.AddCupForUser(user);
-                                                }
+                                                await botClient.SendPhotoAsync(message.Chat.Id, new InputFileStream(ms, "image.png"));
+                                            }
+
+                                            return;
+                                        }
+                                    case "checkCups":
+                                        {
+                                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                                            var userCup = _botService.GetCupForUser(user);
+                                            if (userCup != null) 
+                                            {
+                                                await botClient.SendTextMessageAsync(
+                                                    chatId: chat.Id,
+                                                    $"Количество ваших чашек - {userCup.CountCups}");
                                             }
                                             else
                                             {
-                                                await botClient.SendTextMessageAsync(chat.Id, "Вы не являетесь администратором!");
+                                                await botClient.SendTextMessageAsync(
+                                                    chatId: chat.Id,
+                                                    "У вас нет ни одной чашки!");
                                             }
-                                            return;
-                                        }
-                                    case "CheckCups":
-                                        {
-                                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                            _botService.CheckCupsForUser(user);
                                             return;
                                         }
                                 }
@@ -132,6 +170,11 @@ namespace CoffeBot.Handlers
             }
         }
 
-       
+        private long GetUserIdFromMessage(string message)
+        {
+            var idString = message.Split(' ').Last();
+            var longId = long.Parse(idString);
+            return longId;
+        }
     }
 }

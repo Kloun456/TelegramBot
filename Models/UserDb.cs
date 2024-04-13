@@ -7,6 +7,6 @@
 
         public bool IsAdmin { get; set; }
 
-        public Cup Cup { get; set; }
+        public Cup Cup { get; init; }
     }
 }

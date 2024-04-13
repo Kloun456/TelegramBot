@@ -9,7 +9,7 @@ namespace CoffeBot.Models
         [ForeignKey("UserDb")]
         public Guid Id { get; set; }
 
-        public  UserDb UserDb { get; set; }
+        public UserDb UserDb { get; set; }
         public int CountCups { get; set; }
 
     }

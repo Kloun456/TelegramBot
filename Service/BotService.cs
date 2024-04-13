@@ -1,4 +1,5 @@
-﻿using CoffeBot.Repositories;
+﻿using CoffeBot.Models;
+using CoffeBot.Repositories;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Service
@@ -39,14 +40,29 @@ namespace CoffeBot.Service
             _repositoryUser.CreateUser(user);
         }
 
-        public void CheckCupsForUser(User user)
+        public void CheckCupForUser(User user)
         {
             var userCup = _repositoryCup.GetCupForUser(user);
             if (userCup != null) 
             {
                 Console.WriteLine($"User with id[{user.Id}] have {userCup.CountCups} cups");
             }
-            Console.WriteLine($"User with id[{user.Id}] does not exists in BD");
+            else
+            {
+                Console.WriteLine($"User with id[{user.Id}] does not exists in BD");
+            }
+        }
+
+        public Cup? GetCupForUser(User user)
+        {
+            var userCup = _repositoryCup.GetCupForUser(user);
+            return userCup;
+        }
+
+        public User? GetUser(User user) 
+        {
+
+            return null;
         }
 
         public bool IsUserHaveCups(User user)
