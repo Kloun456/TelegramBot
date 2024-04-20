@@ -1,7 +1,7 @@
 ﻿using CoffeBot.Models;
 using Telegram.Bot.Types;
 
-namespace CoffeBot.Repositories
+namespace CoffeBot.Repositories.Interfaces
 {
     public interface IRepositoryUser
     {

@@ -1,48 +1,61 @@
 ﻿using CoffeBot.DataBase;
 using CoffeBot.Helpers;
 using CoffeBot.Models;
-using Telegram.Bot.Types;
+using CoffeBot.Repositories.Interfaces;
 
 namespace CoffeBot.Repositories
 {
     public class RepositoryCup : IRepositoryCup
     {
         private readonly ApplicationDbContext _dbContext;
-        public RepositoryCup() 
+        public RepositoryCup()
         {
             _dbContext = new ApplicationDbContext();
         }
 
-        public Cup? GetCupForUser(User user)
+        public Cup? GetCupForUser(long userId)
         {
             var cupUser = (from cup in _dbContext.Cups
-                       where cup.UserDb.Id == Conversions.LongToGuid(user.Id)
-                       select cup).FirstOrDefault();
+                           where cup.UserDb.Id == Conversions.LongToGuid(userId)
+                           select cup).FirstOrDefault();
             return cupUser;
         }
 
-        public void AddCupForUser(User user)
+        public void AddCupForUser(long userId)
         {
             var userCup = (from cup in _dbContext.Cups
-                            where cup.UserDb.Id == Conversions.LongToGuid(user.Id)
-                            select cup).ToList().FirstOrDefault();
-            if (userCup == null) 
+                           where cup.UserDb.Id == Conversions.LongToGuid(userId)
+                           select cup).ToList().FirstOrDefault();
+            if (userCup == null)
             {
-                throw new Exception($"Не получилось добавить кружку для пользователя с id[{user.Id}]");
+                throw new Exception($"Не получилось добавить кружку для пользователя с id[{userId}]");
             }
             userCup.CountCups += 1;
             _dbContext.SaveChanges();
         }
 
-        public void CreateCupForUser(User user)
+        public void CreateCupForUser(long userId)
         {
-            
-            _dbContext.Cups.Add(new Cup 
-            { 
-                CountCups = 1, 
-                Id = Conversions.LongToGuid(user.Id) 
+            _dbContext.Cups.Add(new Cup
+            {
+                CountCups = 1,
+                Id = Conversions.LongToGuid(userId)
             });
             _dbContext.SaveChanges();
         }
+
+        public void ResetCupForUser(long userId)
+        {
+            var userCup = (from cup in _dbContext.Cups
+                           where cup.UserDb.Id == Conversions.LongToGuid(userId)
+                           select cup).ToList().FirstOrDefault();
+            if (userCup == null)
+            {
+                throw new Exception($"Не получилось добавить кружку для пользователя с id[{userId}]");
+            }
+            userCup.CountCups = 0;
+            _dbContext.SaveChanges();
+        }
+
     }
 }

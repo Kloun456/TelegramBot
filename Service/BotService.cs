@@ -1,5 +1,6 @@
 ﻿using CoffeBot.Models;
-using CoffeBot.Repositories;
+using CoffeBot.Repositories.Interfaces;
+using CoffeBot.Service.Inerfaces;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Service
@@ -15,19 +16,16 @@ namespace CoffeBot.Service
             _repositoryCup = repositoryCup;
         }
 
-        public bool UserIsAdmin(User user)
+        public bool UserIsAdmin(long userId)
         {
-            var checkUser = _repositoryUser.GetUser(user.Id);
-            if (checkUser == null)
-            {
-                throw new Exception($"Пльзователя с id:[{user.Id}] в базе данных нет");
-            }
+            var checkUser = _repositoryUser.GetUser(userId) ?? 
+                throw new Exception($"Пльзователя с id:[{userId}] в базе данных нет");
             return checkUser.IsAdmin;
         }
 
-        public bool UserIsExistsInDb(User user)
+        public bool UserIsExistsInDb(long userId)
         {
-            var checkUser = _repositoryUser.GetUser(user.Id );
+            var checkUser = _repositoryUser.GetUser(userId);
             if (checkUser == null)
             {
                 return false;
@@ -40,49 +38,25 @@ namespace CoffeBot.Service
             _repositoryUser.CreateUser(user);
         }
 
-        public void CheckCupForUser(User user)
+        public Cup? GetCupForUser(long userId)
         {
-            var userCup = _repositoryCup.GetCupForUser(user);
-            if (userCup != null) 
-            {
-                Console.WriteLine($"User with id[{user.Id}] have {userCup.CountCups} cups");
-            }
-            else
-            {
-                Console.WriteLine($"User with id[{user.Id}] does not exists in BD");
-            }
-        }
-
-        public Cup? GetCupForUser(User user)
-        {
-            var userCup = _repositoryCup.GetCupForUser(user);
+            var userCup = _repositoryCup.GetCupForUser(userId);
             return userCup;
         }
 
-        public User? GetUser(User user) 
+        public void CreateCupForUser(long userId)
         {
-
-            return null;
+            _repositoryCup.CreateCupForUser(userId);
         }
 
-        public bool IsUserHaveCups(User user)
+        public void AddCupForUser(long userId)
         {
-            var userCup = _repositoryCup.GetCupForUser(user);
-            if (userCup != null)
-            {
-                return true;
-            }
-            return false;
+            _repositoryCup.AddCupForUser(userId);
         }
 
-        public void CreateCupForUser(User user)
+        public void ResetCupsForUser(long userId)
         {
-            _repositoryCup.CreateCupForUser(user);
-        }
-
-        public void AddCupForUser(User user)
-        {
-            _repositoryCup.AddCupForUser(user);
+            _repositoryCup.ResetCupForUser(userId);
         }
 
     }

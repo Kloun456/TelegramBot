@@ -1,6 +1,7 @@
 ﻿using CoffeBot.DataBase;
 using CoffeBot.Helpers;
 using CoffeBot.Models;
+using CoffeBot.Repositories.Interfaces;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Repositories

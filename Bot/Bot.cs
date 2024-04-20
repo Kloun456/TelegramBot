@@ -24,9 +24,13 @@ namespace CoffeBot.Bot
         }
         public async Task Start()
         {
+            if (_updateHandler == null || _botClient == null)
+            {   
+                throw new ArgumentNullException("Не удалось запустить бота");
+            }
             using var cancellationToken = new CancellationTokenSource();
 
-            _botClient?.StartReceiving(_updateHandler, _receiverOptions, cancellationToken.Token);
+            _botClient.StartReceiving(_updateHandler, _receiverOptions, cancellationToken.Token);
 
             var botUser = await _botClient.GetMeAsync();
             Console.WriteLine($"{botUser.FirstName} запущен!");
