@@ -1,16 +1,26 @@
 ﻿using CoffeBot.DataBase;
 using CoffeBot.Helpers;
 using CoffeBot.Models;
-using CoffeBot.Repositories.Interfaces;
 
 namespace CoffeBot.Repositories
 {
+    public interface IRepositoryCup
+    {
+        Cup? GetCupForUser(long userId);
+
+        void CreateCupForUser(long userId);
+
+        void AddCupForUser(long userId);
+
+        void ResetCupForUser(long userId);
+    }
+
     public class RepositoryCup : IRepositoryCup
     {
         private readonly ApplicationDbContext _dbContext;
-        public RepositoryCup()
+        public RepositoryCup(ApplicationDbContext dbContext)
         {
-            _dbContext = new ApplicationDbContext();
+            _dbContext = dbContext;
         }
 
         public Cup? GetCupForUser(long userId)

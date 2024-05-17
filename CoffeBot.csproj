@@ -16,6 +16,13 @@
     <PackageReference Include="SKitLs.Bots.Telegram.Core" Version="2.3.2" />
     <PackageReference Include="SKitLs.Bots.Telegram.PageNavs" Version="1.6.0" />
     <PackageReference Include="SKitLs.Bots.Telegram.Stateful" Version="2.2.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

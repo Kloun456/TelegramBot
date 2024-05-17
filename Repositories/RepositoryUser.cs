@@ -1,17 +1,22 @@
 ﻿using CoffeBot.DataBase;
 using CoffeBot.Helpers;
 using CoffeBot.Models;
-using CoffeBot.Repositories.Interfaces;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Repositories
 {
+    public interface IRepositoryUser
+    {
+        UserDb? GetUser(long id);
+        void CreateUser(User user);
+    }
+
     public class RepositoryUser : IRepositoryUser
     {
         private readonly ApplicationDbContext _dbContext;
-        public RepositoryUser()
+        public RepositoryUser(ApplicationDbContext dbContext)
         {
-            _dbContext = new ApplicationDbContext();
+            _dbContext = dbContext;
         }
 
         public UserDb? GetUser(long id)

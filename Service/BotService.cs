@@ -1,10 +1,25 @@
 ﻿using CoffeBot.Models;
-using CoffeBot.Repositories.Interfaces;
-using CoffeBot.Service.Inerfaces;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Service
 {
+    public interface IBotService
+    {
+        void CreateUser(User user);
+
+        void CreateCupForUser(long userId);
+
+        void AddCupForUser(long userId);
+
+        bool UserIsAdmin(long userId);
+
+        bool UserIsExistsInDb(long userId);
+
+        Cup? GetCupForUser(long userId);
+
+        void ResetCupsForUser(long userId);
+    }
+
     public class BotService : IBotService
     {
         private readonly IRepositoryUser _repositoryUser;

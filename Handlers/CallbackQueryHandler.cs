@@ -1,5 +1,4 @@
-﻿using CoffeBot.Handlers.Interface;
-using CoffeBot.Service.Inerfaces;
+﻿using CoffeBot.Service;
 using QRCoder;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -7,6 +6,11 @@ using static QRCoder.PayloadGenerator;
 
 namespace CoffeBot.Handlers
 {
+    public interface ICallbackQueryHandler
+    {
+        Task HandleCallbackQuery(Update update, ITelegramBotClient botClient);
+    }
+
     internal class CallbackQueryHandler : ICallbackQueryHandler
     {
         private IBotService _botService;

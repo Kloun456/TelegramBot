@@ -1,12 +1,16 @@
-﻿using CoffeBot.Handlers.Interface;
-using CoffeBot.Helpers;
-using CoffeBot.Service.Inerfaces;
+﻿using CoffeBot.Helpers;
+using CoffeBot.Service;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CoffeBot.Handlers
 {
+    public interface IMessageHandler
+    {
+        Task HandleMessage(Update update, ITelegramBotClient botClient);
+    }
+
     internal class MessageHandler : IMessageHandler
     {
         private IBotService _botService;
