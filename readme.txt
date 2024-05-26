@@ -1,0 +1,19 @@
+1. Использованные Nuget пакеты:
+	- SKitLs.Bots.Telegram.Core
+		- version 2.3.2
+	- SKitLs.Bots.Telegram.PageNavs
+		- version 1.6.0
+	- SKitLs.Bots.Telegram.ArgedInteractions
+		- version 1.4.1
+	- SKitLs.Bots.Telegram.AdvancedMessages
+		- version 2.2.0
+	- SKitLs.Bots.Telegram.Stateful
+		- version 2.2.0
+	- Microsoft.EntityFrameworkCore
+		- version 8.0.3
+	- Npgsql.EntityFrameworkCore.PostgreSQL
+		- version 8.0.2
+	- QRCoder
+		- version 1.4.3
+	- System.Configuration.ConfigurationManager
+		- version 8.0.0

@@ -1,37 +1,51 @@
-﻿using SKitLs.Bots.Telegram.Core.Model.Building;
-using SKitLs.Bots.Telegram.Core.Model.Interactions.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.Management.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.UpdateHandlers.Defaults;
-using SKitLs.Bots.Telegram.Core.Model.UpdatesCasting.Signed;
+﻿using Telegram.Bot.Polling;
+using Microsoft.Extensions.DependencyInjection;
+using CoffeBot.Handlers;
+using CoffeBot.Repositories;
+using CoffeBot.Service;
+using CoffeBot.Bot;
+using CoffeBot.DataBase;
+using System.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace TelegramBotExperiments
 {
-
     class Program
     {
-        static async Task Main(string[] args)
+        private const string ErrorBotStart = "Не получилось запустить бота";
+
+        private static IServiceCollection ConfigureServices()
         {
-            var privateMessages = new DefaultSignedMessageUpdateHandler();
-            var privateTexts = new DefaultSignedMessageTextUpdateHandler
-            {
-                CommandsManager = new DefaultActionManager<SignedMessageTextUpdate>()
-            };
-            privateTexts.CommandsManager.AddSafely(StartCommand);
-            privateMessages.TextMessageUpdateHandler = privateTexts;
+            var services = new ServiceCollection();
 
-            ChatDesigner privates = ChatDesigner.NewDesigner()
-               .UseMessageHandler(privateMessages);
+            var connectionStringToDb = ConfigurationManager.ConnectionStrings["ConnectionToDb"].ConnectionString;
+           
+            services.AddScoped<Bot>();
+            services.AddTransient<IUpdateHandler, UpdateHandler>();
+            services.AddTransient<IRepositoryCup, RepositoryCup>();
+            services.AddTransient<IMessageHandler, MessageHandler>();
+            services.AddTransient<ICallbackQueryHandler, CallbackQueryHandler>();
+            services.AddTransient<IBotService, BotService>();
+            services.AddTransient<IRepositoryUser, RepositoryUser>();
+            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionStringToDb));
 
-            await BotBuilder.NewBuilder("6435771255:AAHigtm3iMfduaIBEJMRkZqlwzlL5Ndcp8o")
-               .EnablePrivates(privates)
-               .Build()
-               .Listen();
+            return services;
         }
 
-        private static DefaultCommand StartCommand => new("start", Do_StartAsync);
-        private static async Task Do_StartAsync(SignedMessageTextUpdate update)
+        public static async Task Main()
         {
-            await update.Owner.DeliveryService.AnswerSenderAsync("Hello, world!", update);
+            var services = ConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var bot = serviceProvider.GetService<Bot>();
+            if (bot is not null) 
+            {
+                await bot.Start();
+            }
+            else
+            {
+                Console.WriteLine(ErrorBotStart);
+            }
         }
     }
 }
