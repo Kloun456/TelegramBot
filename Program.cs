@@ -12,7 +12,8 @@ namespace TelegramBotExperiments
 {
     class Program
     {
-        private const string _errorBotStart = "Не получилось запустить бота";
+        private const string ErrorBotStart = "Не получилось запустить бота";
+
         private static IServiceCollection ConfigureServices()
         {
             var services = new ServiceCollection();
@@ -43,7 +44,7 @@ namespace TelegramBotExperiments
             }
             else
             {
-                Console.WriteLine(_errorBotStart);
+                Console.WriteLine(ErrorBotStart);
             }
         }
     }

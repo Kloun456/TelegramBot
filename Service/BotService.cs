@@ -1,4 +1,5 @@
 ﻿using CoffeBot.Models;
+using CoffeBot.Repositories;
 using Telegram.Bot.Types;
 
 namespace CoffeBot.Service

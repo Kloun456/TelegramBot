@@ -14,6 +14,12 @@ namespace CoffeBot.Handlers
     internal class MessageHandler : IMessageHandler
     {
         private IBotService _botService;
+
+        private const string ErrorGetSender = "Не удалось получить отправителя сообщения";
+        private const string ErrorGetMessage = "Не удалось получить сообщение";
+        private const string ErrorGetChat = "Не удалось получить чат";
+        private const string ErrorGetTextFromMessage = "Не удалось получить текст сообщения";
+
         public MessageHandler(IBotService botService) 
         {
             _botService = botService;
@@ -21,10 +27,10 @@ namespace CoffeBot.Handlers
 
         public async Task HandleMessage(Update update, ITelegramBotClient botClient)
         {
-            var message = update.Message ?? throw new ArgumentException("Не удалось получить сообщение");
-            var user = message.From ?? throw new ArgumentException("Не удалось получить отправителя сообщения");
-            var chat = message.Chat ?? throw new ArgumentException("Не удалось получить чат");
-            var textFromMessage = message.Text ?? throw new ArgumentNullException("Не удалось получить текст сообщения");
+            var message = update.Message ?? throw new ArgumentException(ErrorGetMessage);
+            var user = message.From ?? throw new ArgumentException(ErrorGetSender);
+            var chat = message.Chat ?? throw new ArgumentException(ErrorGetChat);
+            var textFromMessage = message.Text ?? throw new ArgumentNullException(ErrorGetTextFromMessage);
 
             Console.WriteLine($"{user.FirstName} ({user.Id}) написал сообщение: {message.Text}");
 

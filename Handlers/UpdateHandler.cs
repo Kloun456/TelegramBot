@@ -3,7 +3,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Exceptions;
-using CoffeBot.Handlers.Interface;
 
 namespace CoffeBot.Handlers
 {

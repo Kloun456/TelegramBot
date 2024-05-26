@@ -15,6 +15,10 @@ namespace CoffeBot.Handlers
     {
         private IBotService _botService;
 
+        private const string ErrorGetUser = "Не удалось получить пользователя";
+        private const string ErrorGetMessage = "Не удалось получить сообщение";
+        private const string ErrorGetChat = "Не удалось получить чат";
+
         public CallbackQueryHandler(IBotService botService)
         {
             _botService = botService;
@@ -26,9 +30,9 @@ namespace CoffeBot.Handlers
 
             if (callbackQuery != null)
             {
-                User user = callbackQuery.From ?? throw new ArgumentNullException("Не удалось получить пользователя");
-                Message message = callbackQuery.Message ?? throw new ArgumentNullException("Не удалось получить сообщение");
-                Chat chat = message.Chat ?? throw new ArgumentNullException("Не удалось получить чат");
+                User user = callbackQuery.From ?? throw new ArgumentNullException(ErrorGetUser);
+                Message message = callbackQuery.Message ?? throw new ArgumentNullException(ErrorGetMessage);
+                Chat chat = message.Chat ?? throw new ArgumentNullException(ErrorGetChat);
 
                 Console.WriteLine($"{user.FirstName} ({user.Id}) нажал на кнопку: {callbackQuery.Data}");
 

@@ -12,6 +12,7 @@ namespace CoffeBot.DataBase
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> contextOptions)
         : base(contextOptions)
         {
+            
             Database.EnsureCreated();
         }
 

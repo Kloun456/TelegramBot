@@ -10,6 +10,8 @@ namespace CoffeBot.Bot
         private static ReceiverOptions? _receiverOptions;
         private static IUpdateHandler? _updateHandler;
 
+        private const string ErrorBotStart = "Не удалось запустить бота";
+
         public Bot(IUpdateHandler updateHandler)
         {
             _updateHandler = updateHandler;
@@ -26,7 +28,7 @@ namespace CoffeBot.Bot
         {
             if (_updateHandler == null || _botClient == null)
             {   
-                throw new ArgumentNullException("Не удалось запустить бота");
+                throw new ArgumentNullException(ErrorBotStart);
             }
             using var cancellationToken = new CancellationTokenSource();
 
